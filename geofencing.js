@@ -26,7 +26,7 @@ const doGeofencing = async (evt) => {
             geofences: processedGeofences
         };
     } catch (error) {
-        throw new Error('Error occurred during geofencing.', err);
+        throw new Error('Error occurred during geofencing.', error);
     }
 }
 

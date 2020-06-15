@@ -1,7 +1,7 @@
 const test = require('ava');
 const geofencing = require('../geofencing');
-const seedRepo = require('./seed_repository');
 const fs = require('fs');
+const utils = require('./utils');
 
 let poly120, geofence120;
 let poly300, geofence300;
@@ -73,7 +73,7 @@ test('doGeofencing point in INNER geofence', async t => {
 
     const geofencedEvent = await geofencing.doGeofencing(evt);
 
-    const geofences = seedRepo.createGeofences()
+    const geofences = utils.createGeofences()
         .sort((first, second) => first.range - second.range);
     geofences.forEach(geofence => {
         geofence.intersectsEvent = true
@@ -98,7 +98,7 @@ test('doGeofencing point in MIDDLE geofence', async t => {
 
     const geofencedEvent = await geofencing.doGeofencing(evt);
 
-    const geofences = seedRepo.createGeofences()
+    const geofences = utils.createGeofences()
         .sort((first, second) => first.range - second.range);
     geofences[0].intersectsEvent = false;
     geofences[1].intersectsEvent = true;

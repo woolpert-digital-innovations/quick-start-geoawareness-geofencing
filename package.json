@@ -18,7 +18,7 @@
   },
   "ava": {
     "files": [
-      "!test/seed_repository.js"
+      "!test/utils.js"
     ]
   }
 }

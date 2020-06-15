@@ -1,11 +1,6 @@
 const test = require('ava');
 const repository = require('../repository');
-const seedRepo = require('./seed_repository');
-
-test.before(async t => {
-    await seedRepo.seedStore();
-    await seedRepo.seedGeofences();
-});
+const utils = require('./utils');
 
 test('getStore store exists', async t => {
     const store = await repository.getStore('carmelit');
@@ -19,7 +14,7 @@ test('getStore no store', async t => {
 
 test('getGeofencesByStore store exists', async t => {
     const geofences = await repository.getGeofencesByStore('carmelit');
-    const expected = seedRepo.createGeofences();
+    const expected = utils.createGeofences();
     t.deepEqual(geofences, expected);
 });
 

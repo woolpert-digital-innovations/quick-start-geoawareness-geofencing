@@ -32,11 +32,7 @@ const insertStore = (name, store) => {
 
 const deleteStore = (name) => {
     const key = datastore.key(['Store', name]);
-    datastore.delete(key, (err) => {
-        if (err) {
-            console.log(err);
-        }
-    });
+    return datastore.delete(key);
 }
 
 const insertGeofence = (geofence, storeName) => {
@@ -47,11 +43,7 @@ const insertGeofence = (geofence, storeName) => {
 };
 
 const deleteEntities = (keys) => {
-    datastore.delete(keys, (err) => {
-        if (err) {
-            console.log(err);
-        }
-    });
+    return datastore.delete(keys);
 }
 
 const getGeofencesByStore = async (storeName) => {
