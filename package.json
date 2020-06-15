@@ -1,0 +1,24 @@
+{
+  "name": "geoaware-point-in-poly",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^3.8.2"
+  },
+  "dependencies": {
+    "@google-cloud/datastore": "^6.0.0",
+    "@turf/boolean-point-in-polygon": "^6.0.1",
+    "@turf/helpers": "^6.1.4"
+  },
+  "ava": {
+    "files": [
+      "!test/seed_repository.js"
+    ]
+  }
+}
