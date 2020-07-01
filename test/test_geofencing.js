@@ -1,7 +1,8 @@
 const test = require('ava');
 const geofencing = require('../geofencing');
+const repository = require('../repository');
+const utils = require('./test_utils');
 const fs = require('fs');
-const utils = require('./utils');
 
 let poly120, geofence120;
 let poly300, geofence300;
@@ -63,52 +64,60 @@ test('findInnerGeofence event outside any geofence', t => {
     t.is(innerGeofence, undefined);
 });
 
-test('doGeofencing point in INNER geofence', async t => {
-    const evt = {
-        orderId: 76890291998,
-        eventLocation: [-93.220024, 36.650717],
-        eventTimestamp: new Date(),
-        storeName: 'carmelit',
-    };
+// test('doGeofencing point in INNER geofence', async t => {
+//     const originalOrder = await repository.getOrder('13579', 'carmelit');
+//     const evt = {
+//         ...utils.createEvent(),
+//         eventLocation: {
+//             longitude: -93.220024,
+//             latitude: 36.650717
+//         }
+//     };
 
-    const geofencedEvent = await geofencing.doGeofencing(evt);
+//     await geofencing.geofenceEvent(evt);
 
-    const geofences = utils.createGeofences()
-        .sort((first, second) => first.range - second.range);
-    geofences.forEach(geofence => {
-        geofence.intersectsEvent = true
-    });
+//     const latestEvent = {
+//         ...utils.createLatestEvent(),
+//         eventLocation: {
+//             longitude: -93.220024,
+//             latitude: 36.650717
+//         }
+//     }
+//     latestEvent.geofences.sort((first, second) => first.range - second.range);
+//     latestEvent.geofences.forEach(geofence => {
+//         geofence.intersectsEvent = true;
+//     });
+//     latestEvent.innerGeofence = latestEvent.geofences[0];
+//     const expected = {
+//         ...utils.createOrders()[0],
+//         latestEvent: latestEvent
+//     }
 
+//     const updatedOrder = await repository.getOrder('13579', 'carmelit');
+//     t.deepEqual(updatedOrder, expected);
+
+//     await repository.saveOrder(originalOrder, 'carmelit');
+// });
+
+test('geofenceEvent point in MIDDLE geofence', async t => {
+    const originalOrder = await repository.getOrder('13579', 'carmelit');
+
+    const evt = utils.createEvent();
+    await geofencing.geofenceEvent(evt);
+
+    const latestEvent = utils.createLatestEvent();
+    latestEvent.geofences.sort((first, second) => first.range - second.range);
+    latestEvent.geofences[0].intersectsEvent = false; // inner
+    latestEvent.geofences[1].intersectsEvent = true; // middle
+    latestEvent.geofences[2].intersectsEvent = true; //outer
+    latestEvent.innerGeofence = latestEvent.geofences[1];
     const expected = {
-        ...evt,
-        storeLocation: [-93.220024, 36.650717],
-        innerGeofence: geofences[0],
-        geofences: geofences
+        ...utils.createOrders()[0],
+        latestEvent: latestEvent
     }
-    t.deepEqual(geofencedEvent, expected);
-});
 
-test('doGeofencing point in MIDDLE geofence', async t => {
-    const evt = {
-        orderId: 76890291998,
-        eventLocation: [-93.24011, 36.65083],
-        eventTimestamp: new Date(),
-        storeName: 'carmelit',
-    };
+    const updatedOrder = await repository.getOrder('13579', 'carmelit');
+    t.deepEqual(updatedOrder, expected);
 
-    const geofencedEvent = await geofencing.doGeofencing(evt);
-
-    const geofences = utils.createGeofences()
-        .sort((first, second) => first.range - second.range);
-    geofences[0].intersectsEvent = false;
-    geofences[1].intersectsEvent = true;
-    geofences[2].intersectsEvent = true;
-
-    const expected = {
-        ...evt,
-        storeLocation: [-93.220024, 36.650717],
-        innerGeofence: geofences[1],
-        geofences: geofences
-    }
-    t.deepEqual(geofencedEvent, expected);
+    await repository.saveOrder(originalOrder, 'carmelit');
 });
