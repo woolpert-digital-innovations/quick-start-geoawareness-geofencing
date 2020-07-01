@@ -2,6 +2,7 @@ const test = require('ava');
 const geofencing = require('../geofencing');
 const repository = require('../repository');
 const utils = require('./test_utils');
+const chance = require('chance').Chance();
 const fs = require('fs');
 
 let poly120, geofence120;
@@ -64,45 +65,16 @@ test('findInnerGeofence event outside any geofence', t => {
     t.is(innerGeofence, undefined);
 });
 
-// test('doGeofencing point in INNER geofence', async t => {
-//     const originalOrder = await repository.getOrder('13579', 'carmelit');
-//     const evt = {
-//         ...utils.createEvent(),
-//         eventLocation: {
-//             longitude: -93.220024,
-//             latitude: 36.650717
-//         }
-//     };
+test('geofenceEvent point in MIDDLE geofence NEW order', async t => {
+    const storeName = chance.word();
+    let store = utils.createStore(storeName);
+    await repository.insertStore(store);
 
-//     await geofencing.geofenceEvent(evt);
+    let geofences = utils.createGeofences();
+    await repository.insertGeofences(geofences, storeName);
 
-//     const latestEvent = {
-//         ...utils.createLatestEvent(),
-//         eventLocation: {
-//             longitude: -93.220024,
-//             latitude: 36.650717
-//         }
-//     }
-//     latestEvent.geofences.sort((first, second) => first.range - second.range);
-//     latestEvent.geofences.forEach(geofence => {
-//         geofence.intersectsEvent = true;
-//     });
-//     latestEvent.innerGeofence = latestEvent.geofences[0];
-//     const expected = {
-//         ...utils.createOrders()[0],
-//         latestEvent: latestEvent
-//     }
-
-//     const updatedOrder = await repository.getOrder('13579', 'carmelit');
-//     t.deepEqual(updatedOrder, expected);
-
-//     await repository.saveOrder(originalOrder, 'carmelit');
-// });
-
-test('geofenceEvent point in MIDDLE geofence', async t => {
-    const originalOrder = await repository.getOrder('13579', 'carmelit');
-
-    const evt = utils.createEvent();
+    const orderId = chance.integer();
+    const evt = utils.createEvent(storeName, orderId);
     await geofencing.geofenceEvent(evt);
 
     const latestEvent = utils.createLatestEvent();
@@ -112,12 +84,55 @@ test('geofenceEvent point in MIDDLE geofence', async t => {
     latestEvent.geofences[2].intersectsEvent = true; //outer
     latestEvent.innerGeofence = latestEvent.geofences[1];
     const expected = {
-        ...utils.createOrders()[0],
+        orderId: orderId,
+        storeName: storeName,
+        status: ['new'],
         latestEvent: latestEvent
     }
 
-    const updatedOrder = await repository.getOrder('13579', 'carmelit');
-    t.deepEqual(updatedOrder, expected);
+    const orders = await repository.getOrdersByStore(storeName);
+    t.deepEqual(orders[0], expected);
 
-    await repository.saveOrder(originalOrder, 'carmelit');
+    await repository.deleteOrder(expected.orderId, storeName);
+    geofences = await repository.getGeofencesByStore(storeName);
+    const geofenceIds = geofences.map(geofence => geofence.id);
+    await repository.deleteGeofences(geofenceIds, storeName);
+    await repository.deleteStore(storeName);
+});
+
+test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
+    const storeName = chance.word();
+    let store = utils.createStore(storeName);
+    await repository.insertStore(store);
+
+    let geofences = utils.createGeofences();
+    await repository.insertGeofences(geofences, storeName);
+
+    const order = utils.createOrders(storeName)[0];
+    await repository.saveOrder(order, storeName);
+
+    const evt = utils.createEvent(storeName, order.orderId);
+    await geofencing.geofenceEvent(evt);
+
+    const latestEvent = utils.createLatestEvent();
+    latestEvent.geofences.sort((first, second) => first.range - second.range);
+    latestEvent.geofences[0].intersectsEvent = false; // inner
+    latestEvent.geofences[1].intersectsEvent = true; // middle
+    latestEvent.geofences[2].intersectsEvent = true; //outer
+    latestEvent.innerGeofence = latestEvent.geofences[1];
+    const expected = {
+        orderId: order.orderId,
+        storeName: storeName,
+        status: ['open'],
+        latestEvent: latestEvent
+    }
+
+    const orders = await repository.getOrdersByStore(storeName);
+    t.deepEqual(orders[0], expected);
+
+    await repository.deleteOrder(order.orderId, storeName);
+    geofences = await repository.getGeofencesByStore(storeName);
+    const geofenceIds = geofences.map(geofence => geofence.id);
+    await repository.deleteGeofences(geofenceIds, storeName);
+    await repository.deleteStore(storeName);
 });

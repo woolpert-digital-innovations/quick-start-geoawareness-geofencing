@@ -67,15 +67,15 @@ const createOrders = storeName => {
     ];
 }
 
-const createEvent = () => {
+const createEvent = (storeName, orderId) => {
     return {
-        orderId: '13579',
+        orderId: orderId,
         eventLocation: {
             longitude: -93.24011,
             latitude: 36.65083
         },
         eventTimestamp: 1593563187,
-        storeName: 'carmelit'
+        storeName: storeName
     };
 }
 

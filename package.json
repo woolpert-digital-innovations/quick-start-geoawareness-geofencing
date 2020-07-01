@@ -20,8 +20,7 @@
   "ava": {
     "files": [
       "!test/test_utils.js",
-      "!test/seed_repository.js",
-      "!test/test_geofencing.js"
+      "!test/seed_repository.js"
     ]
   }
 }

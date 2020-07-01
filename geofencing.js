@@ -49,6 +49,7 @@ const geofenceEvent = async (evt) => {
         };
         await repository.saveOrder(updatedOrder, store.name);
     } catch (error) {
+        console.log(error);
         throw new Error('Error occurred during geofencing.', error);
     }
 }
