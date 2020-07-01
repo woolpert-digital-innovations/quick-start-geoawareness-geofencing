@@ -108,8 +108,8 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     let geofences = utils.createGeofences();
     await repository.insertGeofences(geofences, storeName);
 
-    const order = utils.createOrders(storeName)[0];
-    await repository.saveOrder(order, storeName);
+    const order = utils.createOrder(storeName);
+    await repository.saveOrder(order);
 
     const evt = utils.createEvent(storeName, order.orderId);
     await geofencing.geofenceEvent(evt);

@@ -5,53 +5,58 @@ const booleanPointInPolygon = require('@turf/boolean-point-in-polygon').default;
  * Intersects event with all geofences belonging to the store and upserts order document.
  * @param {*} evt 
  */
-const geofenceEvent = async (evt) => {
+const geofenceEvent = async evt => {
     try {
-        const store = await repository.getStore(evt.storeName);
-        if (!store) {
-            throw new Error(`Store ${evt.storeName} not found.`);
-        }
-        const geofences = await repository.getGeofencesByStore(store.name);
-        if (!geofences || !geofences.length) {
-            throw new Error(`No geofences found for store ${store.name}.`);
-        }
+        // TODO: wrap in a transaction
+        const { innerGeofence, processedGeofences } = await doGeofencing(evt);
+        let order = await repository.getOrder(evt.orderId, evt.storeName) ||
+        {
+            orderId: evt.orderId,
+            status: ['new'],
+            storeName: evt.storeName
+        };
 
-        const pt = [evt.eventLocation.longitude, evt.eventLocation.latitude];
-        const processedGeofences = intersectEvent(geofences, pt);
-        const innerGeofence = findInnerGeofence(processedGeofences);
-
-        // remove fields: 1) avoid duplicating geofence geometry for each order 2) geofence id should be hidden
-        processedGeofences.forEach(geofence => {
-            delete geofence.shape;
-            delete geofence.id;
-        });
-        delete innerGeofence.shape;
-        delete innerGeofence.id;
-
-        let updatedOrder;
-        const order = await repository.getOrder(evt.orderId, store.name);
-        if (!order) {
-            updatedOrder = {
-                orderId: evt.orderId,
-                status: ['new'],
-                storeName: store.name
-            };
-        } else {
-            updatedOrder = {
-                ...order
-            }
-        }
-        updatedOrder.latestEvent = {
+        order.latestEvent = {
             eventLocation: evt.eventLocation,
             eventTimestamp: evt.eventTimestamp,
             innerGeofence: innerGeofence,
             geofences: processedGeofences
         };
-        await repository.saveOrder(updatedOrder, store.name);
+
+        await repository.saveOrder(order);
+        repository.insertEvent(evt);
+
     } catch (error) {
         console.log(error);
         throw new Error('Error occurred during geofencing.', error);
     }
+}
+
+const doGeofencing = async evt => {
+    const store = await repository.getStore(evt.storeName);
+    if (!store) {
+        throw new Error(`Store ${evt.storeName} not found.`);
+    }
+    const geofences = await repository.getGeofencesByStore(store.name);
+    if (!geofences || !geofences.length) {
+        throw new Error(`No geofences found for store ${store.name}.`);
+    }
+
+    const pt = [evt.eventLocation.longitude, evt.eventLocation.latitude];
+    const processedGeofences = intersectEvent(geofences, pt);
+    const innerGeofence = findInnerGeofence(processedGeofences);
+
+    // remove fields: 
+    //   1) avoid duplicating geofence geometry for each order 
+    //   2) geofence id should be hidden
+    processedGeofences.forEach(geofence => {
+        delete geofence.shape;
+        delete geofence.id;
+    });
+    delete innerGeofence.shape;
+    delete innerGeofence.id;
+
+    return { innerGeofence, processedGeofences };
 }
 
 /**
@@ -72,7 +77,7 @@ const intersectEvent = (geofences, pt) => {
  * Finds geofence with shortest range from the set of intersecting geofences. 
  * @param {*} geofences 
  */
-const findInnerGeofence = (geofences) => {
+const findInnerGeofence = geofences => {
     const intersectingGeofences = geofences
         .filter(geofence => geofence.intersectsEvent)
         .sort((first, second) => first.range - second.range);

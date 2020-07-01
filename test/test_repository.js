@@ -49,7 +49,7 @@ test('getOrdersByStore store exists', async t => {
 
     const expected = utils.createOrders(storeName);
     for (let i = 0; i < expected.length; i++) {
-        await repository.saveOrder(expected[i], storeName);
+        await repository.saveOrder(expected[i]);
     }
     expected.sort((first, second) => first.orderId - second.orderId);
 
@@ -67,8 +67,8 @@ test('saveOrder insert', async t => {
     let store = utils.createStore(storeName);
     await repository.insertStore(store);
 
-    const expected = utils.createOrders(storeName)[0];
-    await repository.saveOrder(expected, storeName);
+    const expected = utils.createOrder(storeName);
+    await repository.saveOrder(expected);
     const order = await repository.getOrder(expected.orderId, storeName);
 
     t.deepEqual(order, expected);
@@ -82,15 +82,15 @@ test('saveOrder update', async t => {
     let store = utils.createStore(storeName);
     await repository.insertStore(store);
 
-    const order = utils.createOrders(storeName)[0];
-    await repository.saveOrder(order, storeName);
+    const order = utils.createOrder(storeName);
+    await repository.saveOrder(order);
     const originalOrder = await repository.getOrder(order.orderId, storeName);
 
     const changedOrder = {
         ...originalOrder,
         latestEvent: utils.createLatestEvent()
     }
-    await repository.saveOrder(changedOrder, storeName);
+    await repository.saveOrder(changedOrder);
     const updatedOrder = await repository.getOrder(order.orderId, storeName);
     const expected = {
         ...order,

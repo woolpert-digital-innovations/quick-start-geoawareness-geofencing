@@ -170,9 +170,9 @@ const toOrderEntity = order => {
     return entity;
 }
 
-const saveOrder = async (order, storeName) => {
+const saveOrder = async order => {
     return await datastore.save({
-        key: datastore.key(['Store', storeName.toLowerCase(), 'Order', order.orderId]),
+        key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
         data: toOrderEntity(order)
     });
 };
@@ -187,6 +187,23 @@ const deleteOrders = async (orderIds, storeName) => {
         return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
     });
     return await datastore.delete(keys);
+}
+
+const insertEvent = async evt => {
+    return await datastore.save({
+        key: datastore.key(['Store', evt.storeName.toLowerCase(), 'Order', evt.orderId, 'Event']),
+        data: toEventEntity(evt)
+    });
+};
+
+const toEventEntity = evt => {
+    return {
+        ...evt,
+        eventLocation: datastore.geoPoint({
+            longitude: evt.eventLocation.longitude,
+            latitude: evt.eventLocation.latitude
+        })
+    };
 }
 
 exports.getStore = getStore;
@@ -204,3 +221,5 @@ exports.getOrder = getOrder;
 exports.saveOrder = saveOrder;
 exports.deleteOrder = deleteOrder;
 exports.deleteOrders = deleteOrders;
+
+exports.insertEvent = insertEvent;

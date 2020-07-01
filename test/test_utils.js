@@ -41,6 +41,16 @@ const createGeofence = (range, poly) => {
     };
 }
 
+const createOrder = storeName => {
+    return {
+        orderId: chance.integer(),
+        storeName: storeName,
+        status: [
+            'open'
+        ]
+    };
+}
+
 const createOrders = storeName => {
     return [
         {
@@ -120,6 +130,7 @@ const createLatestEvent = () => {
 exports.createStore = createStore;
 exports.createGeofences = createGeofences;
 exports.createOrders = createOrders;
+exports.createOrder = createOrder;
 exports.createEvent = createEvent;
 exports.createOrderEvent = createOrderEvent;
 exports.createLatestEvent = createLatestEvent;

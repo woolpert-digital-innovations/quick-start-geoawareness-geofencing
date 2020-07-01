@@ -37,7 +37,7 @@ const seedOrders = async () => {
         }
         const seedOrders = utils.createOrders();
         for (var i = 0; i < seedOrders.length; i++) {
-            await repository.saveOrder(seedOrders[i], 'carmelit');
+            await repository.saveOrder(seedOrders[i]);
         }
     } catch (error) {
         console.log(error);
