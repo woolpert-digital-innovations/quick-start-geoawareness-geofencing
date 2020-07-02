@@ -20,17 +20,29 @@ const toStoreObject = entity => {
     };
 }
 
+const toStoreEntity = store => {
+    return [
+        {
+            name: 'name',
+            value: store.name
+        },
+        {
+            name: 'location',
+            value: datastore.geoPoint(store.location),
+            type: 'geoPoint',
+            excludeFromIndexes: true
+        },
+        {
+            name: 'address',
+            value: store.address,
+            excludeFromIndexes: true
+        }
+    ];
+}
 const insertStore = async store => {
-    const data = {
-        ...store,
-        location: datastore.geoPoint({
-            longitude: store.location.longitude,
-            latitude: store.location.latitude
-        })
-    };
     return await datastore.save({
         key: datastore.key(['Store', store.name.toLowerCase()]),
-        data: data
+        data: toStoreEntity(store)
     });
 };
 
@@ -154,20 +166,37 @@ const toOrderObject = entity => {
 }
 
 const toOrderEntity = order => {
-    let entity = {
-        ...order,
-    };
+    const props = [
+        {
+            name: 'orderId',
+            value: order.orderId
+        },
+        {
+            name: 'storeName',
+            value: order.storeName,
+            excludeFromIndexes: true
+        },
+        {
+            name: 'status',
+            value: order.status
+        },
+    ];
     if (order.latestEvent) {
         const eventLocation = order.latestEvent.eventLocation;
-        entity.latestEvent = {
-            ...order.latestEvent,
-            eventLocation: datastore.geoPoint({
-                longitude: eventLocation.longitude,
-                latitude: eventLocation.latitude
-            })
-        }
+        props.push({
+            name: 'latestEvent',
+            value: {
+                ...order.latestEvent,
+                eventLocation: datastore.geoPoint({
+                    longitude: eventLocation.longitude,
+                    latitude: eventLocation.latitude
+                })
+            },
+            type: 'object',
+            excludeFromIndexes: true
+        })
     };
-    return entity;
+    return props;
 }
 
 const saveOrder = async order => {
@@ -197,13 +226,26 @@ const insertEvent = async evt => {
 };
 
 const toEventEntity = evt => {
-    return {
-        ...evt,
-        eventLocation: datastore.geoPoint({
-            longitude: evt.eventLocation.longitude,
-            latitude: evt.eventLocation.latitude
-        })
-    };
+    return [
+        {
+            name: 'orderId',
+            value: evt.orderId,
+            excludeFromIndexes: true
+        },
+        {
+            name: 'eventTimestamp',
+            value: evt.eventTimestamp,
+            excludeFromIndexes: true
+        },
+        {
+            name: 'eventLocation',
+            value: datastore.geoPoint({
+                longitude: evt.eventLocation.longitude,
+                latitude: evt.eventLocation.latitude
+            }),
+            excludeFromIndexes: true
+        }
+    ];
 }
 
 exports.getStore = getStore;

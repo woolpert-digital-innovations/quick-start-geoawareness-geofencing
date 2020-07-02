@@ -35,7 +35,7 @@ const seedOrders = async () => {
                 const resp = await repository.deleteOrder(orders[i].orderId, 'carmelit');
             }
         }
-        const seedOrders = utils.createOrders();
+        const seedOrders = utils.createOrders('carmelit');
         for (var i = 0; i < seedOrders.length; i++) {
             await repository.saveOrder(seedOrders[i]);
         }
