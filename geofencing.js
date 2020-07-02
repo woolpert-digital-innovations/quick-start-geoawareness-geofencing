@@ -15,7 +15,7 @@ const geofenceEvent = async evt => {
             resolve(repository.getOrder(evt.orderId, evt.storeName).then(order => {
                 return order || {
                     orderId: evt.orderId,
-                    status: ['open'],
+                    status: [process.env.NEW_EVENT_STATUS || 'open'],
                     storeName: evt.storeName
                 };
             }));
