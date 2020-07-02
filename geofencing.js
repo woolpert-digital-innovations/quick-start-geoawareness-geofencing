@@ -22,19 +22,25 @@ const geofenceEvent = async evt => {
         });
 
         const [{ innerGeofence, processedGeofences }, order] = await Promise.all([geofencingPromise, orderPromise]);
-        order.latestEvent = {
+        let latestEvent = {
             eventLocation: evt.eventLocation,
             eventTimestamp: evt.eventTimestamp,
-            innerGeofence: innerGeofence,
             geofences: processedGeofences
         };
+        if (innerGeofence) {
+            latestEvent = {
+                ...latestEvent,
+                innerGeofence: innerGeofence
+            }
+        }
+        order.latestEvent = latestEvent;
 
         await repository.saveOrder(order);
         repository.insertEvent(evt);
 
     } catch (error) {
-        console.log(error);
-        throw new Error('Error occurred during geofencing.', error);
+        console.log('Error occurred during geofencing.', error);
+        // throw new Error('Error occurred during geofencing.', error);
     }
 }
 
@@ -59,8 +65,10 @@ const doGeofencing = async evt => {
         delete geofence.shape;
         delete geofence.id;
     });
-    delete innerGeofence.shape;
-    delete innerGeofence.id;
+    if (innerGeofence) {
+        delete innerGeofence.shape;
+        delete innerGeofence.id;
+    }
 
     return { innerGeofence, processedGeofences };
 }
@@ -88,7 +96,7 @@ const findInnerGeofence = geofences => {
         .filter(geofence => geofence.intersectsEvent)
         .sort((first, second) => first.range - second.range);
 
-    return intersectingGeofences[0];
+    return intersectingGeofences[0] || null;
 }
 
 const pointInPolygon = (pt, poly) => {

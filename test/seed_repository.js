@@ -1,24 +1,29 @@
 const repository = require('../repository');
 const utils = require('./test_utils');
 
+const storeName = 'carmelit';
 const seedStore = async () => {
-    await repository.deleteStore('carmelit');
-    await repository.insertStore(utils.createStore('Carmelit'));
+    await repository.deleteStore(storeName);
+    const store = {
+        name: 'Carmelit',
+        location: {
+            longitude: -93.220024,
+            latitude: 36.650717
+        },
+        address: '504 Veterans Blvd, Branson, MO 65616'
+    }
+    await repository.insertStore(store);
 }
 
 const seedGeofences = async () => {
     let geofences = [];
     try {
-        geofences = await repository.getGeofencesByStore('carmelit');
+        geofences = await repository.getGeofencesByStore(storeName);
         if (geofences && geofences.length) {
-            for (var i = 0; i < geofences.length; i++) {
-                const resp = await repository.deleteGeofence(geofences[i].id, 'carmelit');
-            }
+            repository.deleteGeofences(geofences.map(geofence => geofence.id), storeName);
         }
         const seedGeofences = utils.createGeofences();
-        for (var i = 0; i < seedGeofences.length; i++) {
-            await repository.insertGeofence(seedGeofences[i], 'carmelit');
-        }
+        repository.insertGeofences(seedGeofences, storeName);
     } catch (error) {
         console.log(error);
     }
@@ -27,17 +32,14 @@ const seedGeofences = async () => {
 const seedOrders = async () => {
     let orders = [];
     try {
-        orders = await repository.getOrdersByStore('carmelit');
+        orders = await repository.getOrdersByStore(storeName);
         if (orders && orders.length) {
             for (var i = 0; i < orders.length; i++) {
-                await repository.deleteOrder(orders[i].orderId, 'carmelit');
+                await repository.deleteOrder(orders[i].orderId, storeName);
             }
         }
-        const seedOrders = utils.createOrders('carmelit');
+        const seedOrders = utils.createOrders(storeName);
         await repository.saveOrders(seedOrders);
-        // for (var i = 0; i < seedOrders.length; i++) {
-        //     await repository.saveOrder(seedOrders[i]);
-        // }
     } catch (error) {
         console.log(error);
     }

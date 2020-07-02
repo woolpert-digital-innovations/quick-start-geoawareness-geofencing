@@ -1,13 +1,12 @@
 const geofencing = require('./geofencing');
 
 const evt = {
-    // orderId: '12345',
-    orderId: '135656168751104',
+    orderId: 'Re6lXdbGMY]',
     eventLocation: {
         longitude: -93.24011,
         latitude: 36.65083
     },
-    eventTimestamp: 1593563187,
+    eventTimestamp: parseInt(Date.now() / 1000), //1593563187,
     storeName: 'carmelit'
 };
 

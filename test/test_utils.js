@@ -43,7 +43,7 @@ const createGeofence = (range, poly) => {
 
 const createOrder = storeName => {
     return {
-        orderId: chance.string(),
+        orderId: chance.integer(),
         storeName: storeName,
         status: [
             'open'
@@ -54,21 +54,21 @@ const createOrder = storeName => {
 const createOrders = storeName => {
     return [
         {
-            orderId: chance.string(),
+            orderId: chance.integer(),
             storeName: storeName,
             status: [
                 'open'
             ]
         },
         {
-            orderId: chance.string(),
+            orderId: chance.integer(),
             storeName: storeName,
             status: [
                 'open'
             ]
         },
         {
-            orderId: chance.string(),
+            orderId: chance.integer(),
             storeName: storeName,
             status: [
                 'closed'

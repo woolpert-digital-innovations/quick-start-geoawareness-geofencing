@@ -189,8 +189,10 @@ const toOrderObject = entity => {
         order.latestEvent = {
             eventLocation: latestEvent.eventLocation,
             eventTimestamp: latestEvent.eventTimestamp,
-            innerGeofence: latestEvent.innerGeofence,
             geofences: latestEvent.geofences
+        }
+        if (latestEvent.innerGeofence) {
+            order.latestEvent.innerGeofence = latestEvent.innerGeofence;
         }
     }
     return order;

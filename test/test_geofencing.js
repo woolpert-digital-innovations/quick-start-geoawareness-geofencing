@@ -62,7 +62,7 @@ test('findInnerGeofence event outside any geofence', t => {
     const eventPoint = [93.218270, 36.622237];
     const geofences = geofencing.intersectEvent([geofence120, geofence300], eventPoint);
     const innerGeofence = geofencing.findInnerGeofence(geofences);
-    t.is(innerGeofence, undefined);
+    t.is(innerGeofence, null);
 });
 
 test('geofenceEvent point in MIDDLE geofence NEW order', async t => {
@@ -135,4 +135,49 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     const geofenceIds = geofences.map(geofence => geofence.id);
     repository.deleteGeofences(geofenceIds, storeName);
     repository.deleteStore(storeName);
+});
+
+test('geofenceEvent point oustide ALL geofences NEW order', async t => {
+    const storeName = chance.word();
+    let store = utils.createStore(storeName);
+    let geofences = utils.createGeofences();
+    await Promise.all([repository.insertStore(store), repository.insertGeofences(geofences, storeName)]);
+
+    const orderId = chance.integer();
+    let evt = utils.createEvent(storeName, orderId);
+    evt = {
+        ...evt,
+        eventLocation: {
+            longitude: 84.24011,
+            latitude: 13.65083
+        }
+    }
+    await geofencing.geofenceEvent(evt);
+
+    const latestEvent = utils.createLatestEvent();
+    latestEvent.geofences.sort((first, second) => first.range - second.range);
+    latestEvent.geofences[0].intersectsEvent = false; // inner
+    latestEvent.geofences[1].intersectsEvent = false; // middle
+    latestEvent.geofences[2].intersectsEvent = false; //outer
+    latestEvent.eventLocation = {
+        longitude: 84.24011,
+        latitude: 13.65083
+    };
+    delete latestEvent.innerGeofence;
+    const expected = {
+        orderId: orderId,
+        storeName: storeName,
+        status: ['open'],
+        latestEvent: latestEvent
+    }
+
+    const orders = await repository.getOrdersByStore(storeName);
+    t.deepEqual(orders[0], expected);
+
+    repository.deleteEventsByOrder(expected.orderId, storeName);
+    repository.deleteOrder(expected.orderId, storeName);
+    geofences = await repository.getGeofencesByStore(storeName);
+    const geofenceIds = geofences.map(geofence => geofence.id);
+    repository.deleteGeofences(geofenceIds, storeName);
+    await repository.deleteStore(storeName); // TODO: why does this need awaiting for store to be cleaned up?
 });
