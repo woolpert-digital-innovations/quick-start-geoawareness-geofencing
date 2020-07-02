@@ -40,7 +40,6 @@ const geofenceEvent = async evt => {
 
     } catch (error) {
         console.log('Error occurred during geofencing.', error);
-        // throw new Error('Error occurred during geofencing.', error);
     }
 }
 

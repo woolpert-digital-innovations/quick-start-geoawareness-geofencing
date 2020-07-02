@@ -27,3 +27,10 @@ Run tests.
 npm install
 npm test
 ```
+
+Set up Pub/Sub
+
+```
+gcloud pubsub topics create geoawareness-ingest
+gcloud pubsub subscriptions create geoawareness-geofencing-service --topic geoawareness-ingest
+```

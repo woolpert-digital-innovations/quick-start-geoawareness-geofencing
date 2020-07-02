@@ -20,10 +20,10 @@ const seedGeofences = async () => {
     try {
         geofences = await repository.getGeofencesByStore(storeName);
         if (geofences && geofences.length) {
-            repository.deleteGeofences(geofences.map(geofence => geofence.id), storeName);
+            await repository.deleteGeofences(geofences.map(geofence => geofence.id), storeName);
         }
         const seedGeofences = utils.createGeofences();
-        repository.insertGeofences(seedGeofences, storeName);
+        await repository.insertGeofences(seedGeofences, storeName);
     } catch (error) {
         console.log(error);
     }
@@ -34,9 +34,7 @@ const seedOrders = async () => {
     try {
         orders = await repository.getOrdersByStore(storeName);
         if (orders && orders.length) {
-            for (var i = 0; i < orders.length; i++) {
-                await repository.deleteOrder(orders[i].orderId, storeName);
-            }
+            await repository.deleteOrders(orders.map(order => order.orderId), storeName);
         }
         const seedOrders = utils.createOrders(storeName);
         await repository.saveOrders(seedOrders);
