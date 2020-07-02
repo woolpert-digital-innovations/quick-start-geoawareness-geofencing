@@ -12,6 +12,18 @@ const getStore = async storeName => {
     return toStoreObject(entity);
 };
 
+const insertStore = async store => {
+    return await datastore.save({
+        key: datastore.key(['Store', store.name.toLowerCase()]),
+        data: toStoreEntity(store)
+    });
+};
+
+const deleteStore = async storeName => {
+    const key = datastore.key(['Store', storeName.toLowerCase()]);
+    return await datastore.delete(key);
+}
+
 const toStoreObject = entity => {
     return {
         name: entity.name,
@@ -39,17 +51,20 @@ const toStoreEntity = store => {
         }
     ];
 }
-const insertStore = async store => {
-    return await datastore.save({
-        key: datastore.key(['Store', store.name.toLowerCase()]),
-        data: toStoreEntity(store)
-    });
-};
 
-const deleteStore = async storeName => {
-    const key = datastore.key(['Store', storeName.toLowerCase()]);
-    return await datastore.delete(key);
-}
+const getGeofencesByStore = async storeName => {
+    const storeKey = datastore.key(['Store', storeName.toLowerCase()]);
+    const query = datastore
+        .createQuery('Geofence')
+        .order('range')
+        .hasAncestor(storeKey);
+
+    const [entities] = await datastore.runQuery(query);
+    if (!entities || !entities.length) {
+        return [];
+    }
+    return entities.map(entity => toGeofenceObject(entity));
+};
 
 const insertGeofence = async (geofence, storeName) => {
     return await datastore.save({
@@ -80,19 +95,15 @@ const deleteGeofences = async (geofenceIds, storeName) => {
     return await datastore.delete(keys);
 }
 
-const getGeofencesByStore = async storeName => {
-    const storeKey = datastore.key(['Store', storeName.toLowerCase()]);
-    const query = datastore
-        .createQuery('Geofence')
-        .order('range')
-        .hasAncestor(storeKey);
-
-    const [entities] = await datastore.runQuery(query);
-    if (!entities || !entities.length) {
-        return [];
+const toGeofenceObject = entity => {
+    return {
+        id: entity[datastore.KEY].id,
+        range: entity.range,
+        rangeType: entity.rangeType,
+        // convert GeoJSON string as stored in DataStore to JavaScript object
+        shape: JSON.parse(entity.shape)
     }
-    return entities.map(entity => toGeofenceObject(entity));
-};
+}
 
 const toGeofenceEntity = geofence => {
     return [
@@ -114,15 +125,15 @@ const toGeofenceEntity = geofence => {
     ];
 }
 
-const toGeofenceObject = entity => {
-    return {
-        id: entity[datastore.KEY].id,
-        range: entity.range,
-        rangeType: entity.rangeType,
-        // convert GeoJSON string as stored in DataStore to JavaScript object
-        shape: JSON.parse(entity.shape)
+const getOrder = async (orderId, storeName) => {
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+
+    const [entity] = await datastore.get(key);
+    if (!entity) {
+        return null;
     }
-}
+    return toOrderObject(entity);
+};
 
 const getOrdersByStore = async storeName => {
     const storeKey = datastore.key(['Store', storeName.toLowerCase()]);
@@ -137,15 +148,34 @@ const getOrdersByStore = async storeName => {
     return entities.map(entity => toOrderObject(entity));
 };
 
-const getOrder = async (orderId, storeName) => {
-    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
-
-    const [entity] = await datastore.get(key);
-    if (!entity) {
-        return null;
-    }
-    return toOrderObject(entity);
+const saveOrder = async order => {
+    return await datastore.save({
+        key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
+        data: toOrderEntity(order)
+    });
 };
+
+const saveOrders = async orders => {
+    const entities = orders.map(order => {
+        return {
+            key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
+            data: toOrderEntity(order)
+        };
+    });
+    return await datastore.save(entities);
+};
+
+const deleteOrder = async (orderId, storeName) => {
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    return await datastore.delete(key);
+}
+
+const deleteOrders = async (orderIds, storeName) => {
+    const keys = orderIds.map(orderId => {
+        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    });
+    return await datastore.delete(keys);
+}
 
 const toOrderObject = entity => {
     const order = {
@@ -199,25 +229,6 @@ const toOrderEntity = order => {
     return props;
 }
 
-const saveOrder = async order => {
-    return await datastore.save({
-        key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
-        data: toOrderEntity(order)
-    });
-};
-
-const deleteOrder = async (orderId, storeName) => {
-    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
-    return await datastore.delete(key);
-}
-
-const deleteOrders = async (orderIds, storeName) => {
-    const keys = orderIds.map(orderId => {
-        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
-    });
-    return await datastore.delete(keys);
-}
-
 const insertEvent = async evt => {
     return await datastore.save({
         key: datastore.key(['Store', evt.storeName.toLowerCase(), 'Order', evt.orderId, 'Event']),
@@ -261,6 +272,7 @@ exports.deleteGeofences = deleteGeofences;
 exports.getOrdersByStore = getOrdersByStore;
 exports.getOrder = getOrder;
 exports.saveOrder = saveOrder;
+exports.saveOrders = saveOrders;
 exports.deleteOrder = deleteOrder;
 exports.deleteOrders = deleteOrders;
 

@@ -16,7 +16,6 @@ const seedGeofences = async () => {
                 const resp = await repository.deleteGeofence(geofences[i].id, 'carmelit');
             }
         }
-        // const seedGeofences = createGeofenceEntities();
         const seedGeofences = utils.createGeofences();
         for (var i = 0; i < seedGeofences.length; i++) {
             await repository.insertGeofence(seedGeofences[i], 'carmelit');

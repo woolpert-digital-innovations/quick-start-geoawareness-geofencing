@@ -8,14 +8,20 @@ const booleanPointInPolygon = require('@turf/boolean-point-in-polygon').default;
 const geofenceEvent = async evt => {
     try {
         // TODO: wrap in a transaction
-        const { innerGeofence, processedGeofences } = await doGeofencing(evt);
-        let order = await repository.getOrder(evt.orderId, evt.storeName) ||
-        {
-            orderId: evt.orderId,
-            status: ['new'],
-            storeName: evt.storeName
-        };
+        const geofencingPromise = new Promise((resolve, reject) => {
+            resolve(doGeofencing(evt));
+        });
+        const orderPromise = new Promise((resolve, reject) => {
+            resolve(repository.getOrder(evt.orderId, evt.storeName).then(order => {
+                return order || {
+                    orderId: evt.orderId,
+                    status: ['new'],
+                    storeName: evt.storeName
+                };
+            }));
+        });
 
+        const [{ innerGeofence, processedGeofences }, order] = await Promise.all([geofencingPromise, orderPromise]);
         order.latestEvent = {
             eventLocation: evt.eventLocation,
             eventTimestamp: evt.eventTimestamp,

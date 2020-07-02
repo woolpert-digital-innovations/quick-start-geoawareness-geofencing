@@ -14,16 +14,14 @@ test('getStore store exists', async t => {
     await repository.insertStore(store);
     store = await repository.getStore(storeName);;
     t.is(store.name, storeName);
-    await repository.deleteStore(storeName);
+    repository.deleteStore(storeName);
 });
 
 test('getGeofencesByStore store exists', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
-    await repository.insertStore(store);
-
     let expected = utils.createGeofences();
-    await repository.insertGeofences(expected, storeName);
+    await Promise.all([repository.insertStore(store), repository.insertGeofences(expected, storeName)]);
 
     const actual = await repository.getGeofencesByStore(storeName);
     const ids = actual.map(geofence => geofence.id);
@@ -33,8 +31,8 @@ test('getGeofencesByStore store exists', async t => {
     });
     t.deepEqual(actual, expected);
 
-    await repository.deleteGeofences(ids, storeName);
-    await repository.deleteStore(storeName);
+    repository.deleteGeofences(ids, storeName);
+    repository.deleteStore(storeName);
 });
 
 test('getGeofencesByStore no store', async t => {
@@ -45,45 +43,39 @@ test('getGeofencesByStore no store', async t => {
 test('getOrdersByStore store exists', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
-    await repository.insertStore(store);
-
     const expected = utils.createOrders(storeName);
-    for (let i = 0; i < expected.length; i++) {
-        await repository.saveOrder(expected[i]);
-    }
     expected.sort((first, second) => first.orderId - second.orderId);
+    await Promise.all([repository.insertStore(store), repository.saveOrders(expected)]);
 
     const orders = await repository.getOrdersByStore(storeName);
     orders.sort((first, second) => first.orderId - second.orderId);
 
     t.deepEqual(orders, expected);
 
-    await repository.deleteOrders(orders.map(order => order.orderId), storeName);
-    await repository.deleteStore(storeName);
+    repository.deleteOrders(orders.map(order => order.orderId), storeName);
+    repository.deleteStore(storeName);
 });
 
 test('saveOrder insert', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
-    await repository.insertStore(store);
-
     const expected = utils.createOrder(storeName);
-    await repository.saveOrder(expected);
+    await Promise.all([repository.insertStore(store), repository.saveOrder(expected)]);
+
     const order = await repository.getOrder(expected.orderId, storeName);
 
     t.deepEqual(order, expected);
 
-    await repository.deleteOrder(expected.orderId, storeName);
-    await repository.deleteStore(storeName);
+    repository.deleteOrder(expected.orderId, storeName);
+    repository.deleteStore(storeName);
 });
 
 test('saveOrder update', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
-    await repository.insertStore(store);
-
     const order = utils.createOrder(storeName);
-    await repository.saveOrder(order);
+    await Promise.all([repository.insertStore(store), repository.saveOrder(order)]);
+
     const originalOrder = await repository.getOrder(order.orderId, storeName);
 
     const changedOrder = {
@@ -98,6 +90,6 @@ test('saveOrder update', async t => {
     }
     t.deepEqual(updatedOrder, expected);
 
-    await repository.deleteOrder(order.orderId, storeName);
-    await repository.deleteStore(storeName);
+    repository.deleteOrder(order.orderId, storeName);
+    repository.deleteStore(storeName);
 })
