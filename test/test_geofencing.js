@@ -84,18 +84,19 @@ test('geofenceEvent point in MIDDLE geofence NEW order', async t => {
     const expected = {
         orderId: orderId,
         storeName: storeName,
-        status: ['new'],
+        status: ['open'],
         latestEvent: latestEvent
     }
 
     const orders = await repository.getOrdersByStore(storeName);
     t.deepEqual(orders[0], expected);
 
+    repository.deleteEventsByOrder(expected.orderId, storeName);
     repository.deleteOrder(expected.orderId, storeName);
     geofences = await repository.getGeofencesByStore(storeName);
     const geofenceIds = geofences.map(geofence => geofence.id);
     repository.deleteGeofences(geofenceIds, storeName);
-    repository.deleteStore(storeName);
+    await repository.deleteStore(storeName); // TODO: why does this need awaiting for store to be cleaned up?
 });
 
 test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
@@ -128,6 +129,7 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     const orders = await repository.getOrdersByStore(storeName);
     t.deepEqual(orders[0], expected);
 
+    repository.deleteEventsByOrder(expected.orderId, storeName);
     repository.deleteOrder(order.orderId, storeName);
     geofences = await repository.getGeofencesByStore(storeName);
     const geofenceIds = geofences.map(geofence => geofence.id);

@@ -91,5 +91,5 @@ test('saveOrder update', async t => {
     t.deepEqual(updatedOrder, expected);
 
     repository.deleteOrder(order.orderId, storeName);
-    repository.deleteStore(storeName);
-})
+    await repository.deleteStore(storeName); // TODO: why does this need awaiting for store to be cleaned up?
+});

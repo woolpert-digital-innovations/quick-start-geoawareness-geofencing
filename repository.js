@@ -13,7 +13,7 @@ const getStore = async storeName => {
 };
 
 const insertStore = async store => {
-    return await datastore.save({
+    await datastore.save({
         key: datastore.key(['Store', store.name.toLowerCase()]),
         data: toStoreEntity(store)
     });
@@ -21,7 +21,7 @@ const insertStore = async store => {
 
 const deleteStore = async storeName => {
     const key = datastore.key(['Store', storeName.toLowerCase()]);
-    return await datastore.delete(key);
+    await datastore.delete(key);
 }
 
 const toStoreObject = entity => {
@@ -67,7 +67,7 @@ const getGeofencesByStore = async storeName => {
 };
 
 const insertGeofence = async (geofence, storeName) => {
-    return await datastore.save({
+    await datastore.save({
         key: datastore.key(['Store', storeName.toLowerCase(), 'Geofence']),
         data: toGeofenceEntity(geofence)
     });
@@ -80,19 +80,19 @@ const insertGeofences = async (geofences, storeName) => {
             data: toGeofenceEntity(geofence)
         };
     });
-    return await datastore.save(entities);
+    await datastore.save(entities);
 };
 
 const deleteGeofence = async (geofenceId, storeName) => {
     const key = datastore.key(['Store', storeName.toLowerCase(), 'Geofence', parseInt(geofenceId)]);
-    return await datastore.delete(key);
+    await datastore.delete(key);
 }
 
 const deleteGeofences = async (geofenceIds, storeName) => {
     const keys = geofenceIds.map(id => {
         return datastore.key(['Store', storeName.toLowerCase(), 'Geofence', parseInt(id)]);
     });
-    return await datastore.delete(keys);
+    await datastore.delete(keys);
 }
 
 const toGeofenceObject = entity => {
@@ -149,7 +149,7 @@ const getOrdersByStore = async storeName => {
 };
 
 const saveOrder = async order => {
-    return await datastore.save({
+    await datastore.save({
         key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
         data: toOrderEntity(order)
     });
@@ -162,19 +162,19 @@ const saveOrders = async orders => {
             data: toOrderEntity(order)
         };
     });
-    return await datastore.save(entities);
+    await datastore.save(entities);
 };
 
 const deleteOrder = async (orderId, storeName) => {
     const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
-    return await datastore.delete(key);
+    await datastore.delete(key);
 }
 
 const deleteOrders = async (orderIds, storeName) => {
     const keys = orderIds.map(orderId => {
         return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
     });
-    return await datastore.delete(keys);
+    await datastore.delete(keys);
 }
 
 const toOrderObject = entity => {
@@ -229,12 +229,42 @@ const toOrderEntity = order => {
     return props;
 }
 
+const getEventsByOrder = async (orderId, storeName) => {
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    const query = datastore
+        .createQuery('Event')
+        .hasAncestor(key);
+
+    const [entities] = await datastore.runQuery(query);
+    if (!entities || !entities.length) {
+        return [];
+    }
+    return entities.map(entity => toEventObject(entity));
+};
+
 const insertEvent = async evt => {
-    return await datastore.save({
+    await datastore.save({
         key: datastore.key(['Store', evt.storeName.toLowerCase(), 'Order', evt.orderId, 'Event']),
         data: toEventEntity(evt)
     });
 };
+
+const deleteEventsByOrder = async (orderId, storeName) => {
+    const events = await getEventsByOrder(orderId, storeName);
+    const keys = events.map(evt => {
+        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId, 'Event', parseInt(evt.id)]);
+    });
+    await datastore.delete(keys);
+}
+
+const toEventObject = entity => {
+    return {
+        id: entity[datastore.KEY].id,
+        orderId: entity.orderId,
+        eventTimestamp: entity.eventTimestamp,
+        eventLocation: entity.eventLocation
+    }
+}
 
 const toEventEntity = evt => {
     return [
@@ -277,3 +307,5 @@ exports.deleteOrder = deleteOrder;
 exports.deleteOrders = deleteOrders;
 
 exports.insertEvent = insertEvent;
+exports.getEventsByOrder = getEventsByOrder;
+exports.deleteEventsByOrder = deleteEventsByOrder;
