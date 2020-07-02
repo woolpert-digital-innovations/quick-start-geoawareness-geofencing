@@ -1,5 +1,4 @@
 const repository = require('../repository');
-const { Datastore } = require('@google-cloud/datastore');
 const utils = require('./test_utils');
 
 const seedStore = async () => {
@@ -31,13 +30,14 @@ const seedOrders = async () => {
         orders = await repository.getOrdersByStore('carmelit');
         if (orders && orders.length) {
             for (var i = 0; i < orders.length; i++) {
-                const resp = await repository.deleteOrder(orders[i].orderId, 'carmelit');
+                await repository.deleteOrder(orders[i].orderId, 'carmelit');
             }
         }
         const seedOrders = utils.createOrders('carmelit');
-        for (var i = 0; i < seedOrders.length; i++) {
-            await repository.saveOrder(seedOrders[i]);
-        }
+        await repository.saveOrders(seedOrders);
+        // for (var i = 0; i < seedOrders.length; i++) {
+        //     await repository.saveOrder(seedOrders[i]);
+        // }
     } catch (error) {
         console.log(error);
     }

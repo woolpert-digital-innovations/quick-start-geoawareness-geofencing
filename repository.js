@@ -3,9 +3,9 @@ const { Datastore } = require('@google-cloud/datastore');
 const datastore = new Datastore();
 
 const getStore = async storeName => {
-    const storeKey = datastore.key(['Store', storeName.toLowerCase()]);
+    const key = datastore.key(['Store', storeName.toLowerCase()]);
 
-    const [entity] = await datastore.get(storeKey);
+    const [entity] = await datastore.get(key);
     if (!entity) {
         return null;
     }
@@ -126,7 +126,7 @@ const toGeofenceEntity = geofence => {
 }
 
 const getOrder = async (orderId, storeName) => {
-    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId.toString()]);
 
     const [entity] = await datastore.get(key);
     if (!entity) {
@@ -149,8 +149,9 @@ const getOrdersByStore = async storeName => {
 };
 
 const saveOrder = async order => {
+    // make sure to convert orderId to a string so that it's saved as a name rather than Id
     await datastore.save({
-        key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
+        key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId.toString()]),
         data: toOrderEntity(order)
     });
 };
@@ -158,7 +159,7 @@ const saveOrder = async order => {
 const saveOrders = async orders => {
     const entities = orders.map(order => {
         return {
-            key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId]),
+            key: datastore.key(['Store', order.storeName.toLowerCase(), 'Order', order.orderId.toString()]),
             data: toOrderEntity(order)
         };
     });
@@ -166,13 +167,13 @@ const saveOrders = async orders => {
 };
 
 const deleteOrder = async (orderId, storeName) => {
-    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId.toString()]);
     await datastore.delete(key);
 }
 
 const deleteOrders = async (orderIds, storeName) => {
     const keys = orderIds.map(orderId => {
-        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId.toString()]);
     });
     await datastore.delete(keys);
 }
@@ -230,7 +231,7 @@ const toOrderEntity = order => {
 }
 
 const getEventsByOrder = async (orderId, storeName) => {
-    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId]);
+    const key = datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId.toString()]);
     const query = datastore
         .createQuery('Event')
         .hasAncestor(key);
@@ -244,7 +245,7 @@ const getEventsByOrder = async (orderId, storeName) => {
 
 const insertEvent = async evt => {
     await datastore.save({
-        key: datastore.key(['Store', evt.storeName.toLowerCase(), 'Order', evt.orderId, 'Event']),
+        key: datastore.key(['Store', evt.storeName.toLowerCase(), 'Order', evt.orderId.toString(), 'Event']),
         data: toEventEntity(evt)
     });
 };
@@ -252,7 +253,7 @@ const insertEvent = async evt => {
 const deleteEventsByOrder = async (orderId, storeName) => {
     const events = await getEventsByOrder(orderId, storeName);
     const keys = events.map(evt => {
-        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId, 'Event', parseInt(evt.id)]);
+        return datastore.key(['Store', storeName.toLowerCase(), 'Order', orderId.toString(), 'Event', parseInt(evt.id)]);
     });
     await datastore.delete(keys);
 }
