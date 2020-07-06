@@ -1,3 +1,4 @@
+.env
 .nvmrc
 *.DS_Store
 node_modules/
