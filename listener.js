@@ -11,8 +11,8 @@ function listenForMessages() {
 
     const messageHandler = message => {
         console.log(`\nReceived message ${message.id}:`);
-        console.log(`Data: ${message.data}`);
-        // console.log(`\tAttributes: ${message.attributes}`);
+        console.log(`\tData: ${message.data}`);
+        console.log(`\tAttributes: ${message.attributes}`);
 
         const evt = JSON.parse(message.data);
         geofencing.geofenceEvent(evt);
@@ -20,13 +20,7 @@ function listenForMessages() {
         message.ack();
     };
 
-    // Listen for new messages until timeout is hit
     subscription.on('message', messageHandler);
-
-    // setTimeout(() => {
-    //     subscription.removeListener('message', messageHandler);
-    //     console.log(`${messageCount} message(s) received.`);
-    // }, timeout * 1000);
 }
 
 listenForMessages();
