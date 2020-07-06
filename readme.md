@@ -79,7 +79,7 @@ docker push gcr.io/$PROJECT_ID/geoawareness-geofencing-service
 
 gcloud compute instances create-with-container geoawareness-geofencing-service  \
 --container-image=gcr.io/$PROJECT_ID/geoawareness-geofencing-service \
---service-account=geoawareness@geoawareness-sandbox.iam.gserviceaccount.com \
+--service-account=geoawareness@$PROJECT_ID.iam.gserviceaccount.com \
 --scopes=default,pubsub,datastore
 --machine-type=e2-micro \
 --zone=$GCP_ZONE
