@@ -9,7 +9,7 @@ const { PubSub } = require('@google-cloud/pubsub');
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
 
-function parseEvent(line) {
+function createEvent(line, orderId) {
     const evt = {
         orderId: orderId,
         eventLocation: {
@@ -28,21 +28,24 @@ async function publishMessage(data) {
     console.log(`Message ${messageId} published.`);
 }
 
-const route = fs.readFileSync('demo-script/dalton_dr_route.coords', 'utf8');
-const coords = route.split(/\r?\n/);
-const orderId = chance.guid();
+function playRoute(routeFile) {
+    const route = fs.readFileSync(routeFile, 'utf8');
+    const coords = route.split(/\r?\n/);
+    const orderId = chance.guid();
 
-let counter = 0;
-const timer = setInterval(() => {
-    const line = coords[counter];
-    const evt = parseEvent(line);
-    console.log(evt);
+    let counter = 0;
+    const timer = setInterval(() => {
+        const line = coords[counter];
+        const evt = createEvent(line, orderId);
+        console.log(evt);
 
-    publishMessage(JSON.stringify(evt)).catch(console.error);
+        publishMessage(JSON.stringify(evt)).catch(console.error);
 
-    counter++;
-    if (counter === coords.length) {
-        clearInterval(timer);
-    }
-}, interval * 1000);
+        counter++;
+        if (counter === coords.length) {
+            clearInterval(timer);
+        }
+    }, interval * 1000);
+}
 
+playRoute('demo-script/dalton_dr_route.coords');
