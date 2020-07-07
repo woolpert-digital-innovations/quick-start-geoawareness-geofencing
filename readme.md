@@ -25,7 +25,7 @@ export PROJECT_ID=<YOUR_PROJECT_ID>
 export GCP_ZONE=<YOUR_GCP_ZONE>
 
 gcloud config set project $PROJECT_ID
-export GOOGLE_APPLICATION_CREDENTIALS=geoawareness@$PROJECT_ID.iam.gserviceaccount.com
+export GOOGLE_APPLICATION_CREDENTIALS=geoawareness-service-account-credentials.json
 export NEW_EVENT_STATUS=open # optional
 export INGEST_SUBSCRIPTION_NAME=geoawareness-geofencing-service # optional
 ```
@@ -74,8 +74,7 @@ node demo-script/drive-route.js
 
 ```
 gcloud services enable containerregistry.googleapis.com
-docker build . -t gcr.io/$PROJECT_ID/geoawareness-geofencing-service
-docker push gcr.io/$PROJECT_ID/geoawareness-geofencing-service
+gcloud builds submit --tag gcr.io/$PROJECT_ID/geoawareness-geofencing-service
 
 gcloud compute instances create-with-container geoawareness-geofencing-service  \
 --container-image=gcr.io/$PROJECT_ID/geoawareness-geofencing-service \
@@ -96,7 +95,6 @@ gcloud pubsub topics publish geoawareness-ingest --message="$(jq '.[0]' < ./test
 ### Updating deployed container
 
 ```
-docker build . -t gcr.io/$PROJECT_ID/geoawareness-geofencing-service
-docker push gcr.io/$PROJECT_ID/geoawareness-geofencing-service
+gcloud builds submit --tag gcr.io/$PROJECT_ID/geoawareness-geofencing-service
 gcloud compute instances update-container geoawareness-geofencing-service --container-image gcr.io/$PROJECT_ID/geoawareness-geofencing-service
 ```

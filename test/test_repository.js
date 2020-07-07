@@ -17,6 +17,15 @@ test('getStore store exists', async t => {
     repository.deleteStore(storeName);
 });
 
+test('getStores store exists', async t => {
+    const storeName = chance.word();
+    let store = utils.createStore(storeName);
+    await repository.insertStore(store);
+    const stores = await repository.getStores(storeName);;
+    t.assert(stores.find(store => store.name === storeName));
+    repository.deleteStore(storeName);
+});
+
 test('getGeofencesByStore store exists', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
