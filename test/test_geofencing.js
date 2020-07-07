@@ -9,7 +9,7 @@ let poly120, geofence120;
 let poly300, geofence300;
 
 test.before(t => {
-    const rawPoly120 = fs.readFileSync('test/time_120_poly.json', 'utf8');
+    const rawPoly120 = fs.readFileSync('test/fakes/time_120_poly.json', 'utf8');
     poly120 = JSON.parse(rawPoly120);
     geofence120 = {
         range: 120,
@@ -17,7 +17,7 @@ test.before(t => {
         shape: poly120
     };
 
-    const rawPoly300 = fs.readFileSync('test/time_300_poly.json', 'utf8');
+    const rawPoly300 = fs.readFileSync('test/fakes/time_300_poly.json', 'utf8');
     poly300 = JSON.parse(rawPoly300);
     geofence300 = {
         range: 300,
