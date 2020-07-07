@@ -1,11 +1,11 @@
 const repository = require('../repository');
 const utils = require('./test_utils');
 
-const storeName = 'carmelit';
+const storeName = 'Carmelit';
 const seedStore = async () => {
     await repository.deleteStore(storeName);
     const store = {
-        name: 'Carmelit',
+        name: storeName,
         location: {
             longitude: -93.220024,
             latitude: 36.650717
