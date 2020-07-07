@@ -119,14 +119,32 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     latestEvent.geofences[1].intersectsEvent = true; // middle
     latestEvent.geofences[2].intersectsEvent = true; //outer
     latestEvent.innerGeofence = latestEvent.geofences[1];
-    const expected = {
+    let expected = {
         orderId: order.orderId,
         storeName: storeName,
         status: ['open'],
         latestEvent: latestEvent
     }
 
-    const orders = await repository.getOrdersByStore(storeName);
+    let orders = await repository.getOrdersByStore(storeName);
+    t.deepEqual(orders[0], expected);
+
+    const olderEvent = {
+        ...evt,
+        eventTimestamp: evt.eventTimestamp - 1
+    }
+    // expected = {
+    //     orderId: order.orderId,
+    //     storeName: storeName,
+    //     status: ['open'],
+    //     latestEvent: {
+    //         ...latestEvent,
+    //         eventTimestamp: evt.eventTimestamp - 1
+    //     }
+    // }
+    await geofencing.geofenceEvent(olderEvent);
+
+    orders = await repository.getOrdersByStore(storeName);
     t.deepEqual(orders[0], expected);
 
     repository.deleteEventsByOrder(expected.orderId, storeName);
