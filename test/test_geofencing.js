@@ -9,7 +9,7 @@ let poly120, geofence120;
 let poly300, geofence300;
 
 test.before(t => {
-    const rawPoly120 = fs.readFileSync('test/time_120_poly.json', 'utf8');
+    const rawPoly120 = fs.readFileSync('test/fakes/time_120_poly.json', 'utf8');
     poly120 = JSON.parse(rawPoly120);
     geofence120 = {
         range: 120,
@@ -17,7 +17,7 @@ test.before(t => {
         shape: poly120
     };
 
-    const rawPoly300 = fs.readFileSync('test/time_300_poly.json', 'utf8');
+    const rawPoly300 = fs.readFileSync('test/fakes/time_300_poly.json', 'utf8');
     poly300 = JSON.parse(rawPoly300);
     geofence300 = {
         range: 300,
@@ -119,14 +119,24 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     latestEvent.geofences[1].intersectsEvent = true; // middle
     latestEvent.geofences[2].intersectsEvent = true; //outer
     latestEvent.innerGeofence = latestEvent.geofences[1];
-    const expected = {
+    let expected = {
         orderId: order.orderId,
         storeName: storeName,
         status: ['open'],
         latestEvent: latestEvent
     }
 
-    const orders = await repository.getOrdersByStore(storeName);
+    let orders = await repository.getOrdersByStore(storeName);
+    t.deepEqual(orders[0], expected);
+
+    // order should not be updated with older event (case of out of order message processing)
+    const olderEvent = {
+        ...evt,
+        eventTimestamp: evt.eventTimestamp - 1
+    }
+    await geofencing.geofenceEvent(olderEvent);
+
+    orders = await repository.getOrdersByStore(storeName);
     t.deepEqual(orders[0], expected);
 
     repository.deleteEventsByOrder(expected.orderId, storeName);
