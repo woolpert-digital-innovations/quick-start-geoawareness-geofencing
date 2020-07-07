@@ -129,19 +129,11 @@ test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
     let orders = await repository.getOrdersByStore(storeName);
     t.deepEqual(orders[0], expected);
 
+    // order should not be updated with older event (case of out of order message processing)
     const olderEvent = {
         ...evt,
         eventTimestamp: evt.eventTimestamp - 1
     }
-    // expected = {
-    //     orderId: order.orderId,
-    //     storeName: storeName,
-    //     status: ['open'],
-    //     latestEvent: {
-    //         ...latestEvent,
-    //         eventTimestamp: evt.eventTimestamp - 1
-    //     }
-    // }
     await geofencing.geofenceEvent(olderEvent);
 
     orders = await repository.getOrdersByStore(storeName);
