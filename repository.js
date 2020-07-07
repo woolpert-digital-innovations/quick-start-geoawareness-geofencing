@@ -12,6 +12,19 @@ const getStore = async storeName => {
     return toStoreObject(entity);
 };
 
+const getStores = async () => {
+    const query = datastore
+        .createQuery('Store')
+        .order('name');
+
+    const [entities] = await datastore.runQuery(query);
+    if (!entities || !entities.length) {
+        return [];
+    }
+
+    return entities.map(entity => toStoreObject(entity));
+};
+
 const insertStore = async store => {
     await datastore.save({
         key: datastore.key(['Store', store.name.toLowerCase()]),
@@ -293,6 +306,7 @@ const toEventEntity = evt => {
 }
 
 exports.getStore = getStore;
+exports.getStores = getStores;
 exports.insertStore = insertStore;
 exports.deleteStore = deleteStore;
 
