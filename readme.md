@@ -86,3 +86,17 @@ gcloud compute instances create-with-container geoawareness-geofencing-service  
 ```
 
 The listener is ready to handle messages from the ingest topic as a pull subscriber.
+
+### Smoke test
+
+```
+gcloud pubsub topics publish geoawareness-ingest --message="$(jq '.[0]' < ./test/fakes/events.json)"
+```
+
+### Updating deployed container
+
+```
+docker build . -t gcr.io/$PROJECT_ID/geoawareness-geofencing-service
+docker push gcr.io/$PROJECT_ID/geoawareness-geofencing-service
+gcloud compute instances update-container geoawareness-geofencing-service --container-image gcr.io/$PROJECT_ID/geoawareness-geofencing-service
+```

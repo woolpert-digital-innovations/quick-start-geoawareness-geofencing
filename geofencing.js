@@ -13,8 +13,11 @@ const geofenceEvent = async evt => {
         });
         const orderPromise = new Promise((resolve, reject) => {
             resolve(repository.getOrder(evt.orderId, evt.storeName).then(order => {
-                if (order && order.latestEvent && order.latestEvent.eventTimestamp && evt.eventTimestamp < order.latestEvent.eventTimestamp) {
-                    throw (`Event timestamp ${evt.eventTimestamp} is older than latest event timestamp ${order.latestEvent.eventTimestamp}`);
+                if (order &&
+                    order.latestEvent &&
+                    order.latestEvent.eventTimestamp &&
+                    evt.eventTimestamp < order.latestEvent.eventTimestamp) {
+                    throw (`Event timestamp ${evt.eventTimestamp} is older than latest event timestamp ${order.latestEvent.eventTimestamp}.`);
                 }
                 return order || {
                     orderId: evt.orderId,
