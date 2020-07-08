@@ -55,7 +55,7 @@ gcloud pubsub subscriptions create geoawareness-geofencing-service --topic geoaw
 Seed Firestore (DataStore mode) database.
 
 ```
-node test/seed_repository.js
+node demo/seed_repository.js
 ```
 
 Launch the pubsub listener.

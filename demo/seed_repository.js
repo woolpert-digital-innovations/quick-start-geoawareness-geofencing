@@ -1,5 +1,5 @@
-const repository = require('../repository');
-const utils = require('./test_utils');
+const repository = require('../src/repository');
+const utils = require('../test/test_utils');
 
 const storeName = 'Carmelit';
 const seedStore = async () => {
@@ -46,3 +46,4 @@ const seedOrders = async () => {
 seedStore();
 seedGeofences();
 seedOrders();
+console.log(`Seeding completed for ${storeName}.`);

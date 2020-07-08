@@ -48,4 +48,4 @@ function playRoute(routeFile) {
     }, interval * 1000);
 }
 
-playRoute('demo-script/dalton_dr_route.coords');
+playRoute('demo/dalton_dr_route.coords');

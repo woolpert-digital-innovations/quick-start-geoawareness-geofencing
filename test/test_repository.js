@@ -1,5 +1,5 @@
 const test = require('ava');
-const repository = require('../repository');
+const repository = require('../src/repository');
 const utils = require('./test_utils');
 const chance = require('chance').Chance();
 

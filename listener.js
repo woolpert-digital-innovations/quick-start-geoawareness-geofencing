@@ -1,4 +1,4 @@
-const geofencing = require('./geofencing');
+const geofencing = require('./src/geofencing');
 const subscriptionName = process.env.INGEST_SUBSCRIPTION_NAME || 'geoawareness-geofencing-service';
 
 const { PubSub } = require('@google-cloud/pubsub');
@@ -19,8 +19,8 @@ function listenForMessages() {
 
         message.ack();
     };
-
     subscription.on('message', messageHandler);
 }
 
 listenForMessages();
+console.log(`Listening for messages on subscription ${subscriptionName}.`);
