@@ -31,7 +31,7 @@ async function publishMessage(data) {
 function playRoute(routeFile) {
     const route = fs.readFileSync(routeFile, 'utf8');
     const coords = route.split(/\r?\n/);
-    const orderId = chance.guid();
+    const orderId = chance.first();
 
     let counter = 0;
     const timer = setInterval(() => {

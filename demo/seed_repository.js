@@ -58,8 +58,9 @@ const seedOrders = async () => {
         if (orders && orders.length) {
             await repository.deleteOrders(orders.map(order => order.orderId), storeName);
         }
+        // TODO: enable this if we want seed orders
         const seedOrders = utils.createOrders(storeName);
-        await repository.saveOrders(seedOrders);
+        // await repository.saveOrders(seedOrders);
     } catch (error) {
         console.log(error);
     }
