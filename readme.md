@@ -67,8 +67,20 @@ node listener.js
 Send mock telemetry events for the Dalton Drive route.
 
 ```
-node demo-script/drive-route.js
+node demo/drive-route.js
 ```
+
+## Run Demo (existing infra)
+
+If you want to use existing infrastructure and only need to run the demo follow these steps to ingest messages.
+
+1. Download a new json key for the `geoawareness@geoawareness-sandbox.iam.gserviceaccount.com` service account in the `geoawareness-sandbox` project, or, the relevant account in the relevant project you wish to ingest to.
+
+1. Save the newly download json file to `~/.keys/geowareness-runner.json` for example.
+
+1. Run the demo
+
+       export GOOGLE_APPLICATION_CREDENTIALS=~/.keys/geoawareness-runner.json && node demo/drive-route.js
 
 ## Deploying
 
