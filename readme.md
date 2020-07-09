@@ -8,16 +8,6 @@ The Geofencing service performs the following operations:
 
 ## Getting Started
 
-Create service account.
-
-Example - _geoawareness@geoawareness-sandbox.iam.gserviceaccount.com_.
-
-The service account must have the following minimum permissions:
-
-- Firestore Datastore User
-- Pub/Sub Subscriber
-- Pub/Sub Publisher (demo script only)
-
 Configure gcloud shell environment.
 
 ```
@@ -25,29 +15,53 @@ export PROJECT_ID=<YOUR_PROJECT_ID>
 export GCP_ZONE=<YOUR_GCP_ZONE>
 
 gcloud config set project $PROJECT_ID
-export GOOGLE_APPLICATION_CREDENTIALS=geoawareness-service-account-credentials.json
 export NEW_EVENT_STATUS=open # optional
 export INGEST_SUBSCRIPTION_NAME=geoawareness-geofencing-service # optional
 ```
 
-Create Datastore indexes.
+Create service account. Example - _geoawareness@geoawareness-sandbox.iam.gserviceaccount.com_.
+
+```
+gcloud iam service-accounts create geoawareness
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:geoawareness@$PROJECT_ID.iam.gserviceaccount.com --role=roles/editor
+```
+
+Create key for service account and download credentials json file.
+
+```
+export GOOGLE_APPLICATION_CREDENTIALS=geoawareness-service-account-credentials.json
+```
+
+The service account must have the following minimum permissions:
+
+- Firestore Datastore User
+- Pub/Sub Subscriber
+- Pub/Sub Publisher (demo script only)
+
+### Datastore
+
+Create a new [Datastore database](https://cloud.google.com/datastore/docs/quickstart#create_a_database) in the GCP project you created earlier.
+
+Build Datastore indexes.
 
 ```
 gcloud datastore indexes create index.yaml
 ```
 
-Run tests.
-
-```
-npm install
-npm test
-```
+### Pub/Sub
 
 Create Pub/Sub topic and subscription.
 
 ```
 gcloud pubsub topics create geoawareness-ingest
 gcloud pubsub subscriptions create geoawareness-geofencing-service --topic geoawareness-ingest
+```
+
+## Run tests
+
+```
+npm install
+npm test
 ```
 
 ## Run demo
