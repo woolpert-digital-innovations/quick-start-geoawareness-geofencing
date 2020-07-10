@@ -3,6 +3,7 @@ const chance = require('chance').Chance();
 
 const topicName = process.env.INGEST_TOPIC_NAME || 'geoawareness-ingest';
 const interval = 1; // seconds between publish events
+const skipVertices = 2;
 
 const { PubSub } = require('@google-cloud/pubsub');
 
@@ -17,7 +18,7 @@ function createEvent(line, orderId) {
             latitude: line.split(',')[0]
         },
         eventTimestamp: parseInt(Date.now() / 1000),
-        storeName: 'carmelit'
+        storeName: 'Carmelit'
     };
     return evt;
 }
@@ -41,7 +42,7 @@ function playRoute(routeFile) {
 
         publishMessage(JSON.stringify(evt)).catch(console.error);
 
-        counter++;
+        counter += skipVertices;
         if (counter === coords.length) {
             clearInterval(timer);
         }
@@ -49,3 +50,5 @@ function playRoute(routeFile) {
 }
 
 playRoute('demo/dalton_dr_route.coords');
+playRoute('demo/fox_ridge_rd_route.coords');
+playRoute('demo/walnut_st_route.coords');
