@@ -49,7 +49,7 @@ test('getGeofencesByStore no store', async t => {
     t.deepEqual(geofences, []);
 });
 
-test('getOrdersByStore store exists', async t => {
+test('getOrdersByStore', async t => {
     const storeName = chance.word();
     let store = utils.createStore(storeName);
     const expected = utils.createOrders(storeName);
@@ -60,6 +60,25 @@ test('getOrdersByStore store exists', async t => {
     orders.sort((first, second) => first.orderId - second.orderId);
 
     t.deepEqual(orders, expected);
+
+    repository.deleteOrders(orders.map(order => order.orderId), storeName);
+    repository.deleteStore(storeName);
+});
+
+test('getOrdersByStore open orders', async t => {
+    const storeName = chance.word();
+    let store = utils.createStore(storeName);
+    const expected = utils.createOrders(storeName);
+    expected.sort((first, second) => first.orderId - second.orderId);
+    await Promise.all([repository.insertStore(store), repository.saveOrders(expected)]);
+
+    const orders = await repository.getOrdersByStore(storeName, 'open');
+    orders.sort((first, second) => first.orderId - second.orderId);
+
+    const openOrders = expected.filter(order => {
+        return order.status.find(status => status == 'open');
+    });
+    t.deepEqual(orders, openOrders);
 
     repository.deleteOrders(orders.map(order => order.orderId), storeName);
     repository.deleteStore(storeName);

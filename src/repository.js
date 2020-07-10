@@ -148,11 +148,15 @@ const getOrder = async (orderId, storeName) => {
     return toOrderObject(entity);
 };
 
-const getOrdersByStore = async storeName => {
+const getOrdersByStore = async (storeName, status) => {
     const storeKey = datastore.key(['Store', storeName.toLowerCase()]);
-    const query = datastore
+    let query = datastore
         .createQuery('Order')
         .hasAncestor(storeKey);
+
+    if (status) {
+        query = query.filter('status', '=', status);
+    }
 
     const [entities] = await datastore.runQuery(query);
     if (!entities || !entities.length) {
