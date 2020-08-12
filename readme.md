@@ -1,4 +1,4 @@
-# geoawareness-geofencing
+# Geofencing service
 
 The Geofencing service performs the following operations:
 
@@ -11,10 +11,6 @@ The Geofencing service performs the following operations:
 Configure gcloud shell environment.
 
 ```
-export PROJECT_ID=<YOUR_PROJECT_ID>
-export GCP_ZONE=<YOUR_GCP_ZONE>
-
-gcloud config set project $PROJECT_ID
 export NEW_EVENT_STATUS=open # optional
 export INGEST_SUBSCRIPTION_NAME=geoawareness-geofencing-service # optional
 ```
@@ -72,7 +68,7 @@ Seed Firestore (DataStore mode) database.
 node demo/seed_repository.js
 ```
 
-Launch the pubsub listener.
+Launch the Pub/Sub listener.
 
 ```
 node listener.js
@@ -94,9 +90,9 @@ If you want to use existing infrastructure and only need to run the demo follow 
 
 1. Run the demo
 
-       export GOOGLE_APPLICATION_CREDENTIALS=~/.keys/geoawareness-runner.json && node demo/drive-route.js
+   export GOOGLE_APPLICATION_CREDENTIALS=~/.keys/geoawareness-runner.json && node demo/drive-route.js
 
-## Deploying
+## Deploy to GCP
 
 ```
 gcloud services enable containerregistry.googleapis.com
