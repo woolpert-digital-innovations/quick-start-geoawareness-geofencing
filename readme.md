@@ -26,6 +26,8 @@ Create key for service account and download credentials json file.
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=geoawareness-service-account-credentials.json
+gcloud iam service-accounts keys create $GOOGLE_APPLICATION_CREDENTIALS \
+   --iam-account geoawareness@$PROJECT_ID.iam.gserviceaccount.com
 ```
 
 The service account must have the following minimum permissions:
@@ -36,7 +38,13 @@ The service account must have the following minimum permissions:
 
 ### Datastore
 
-Create a new [Datastore database](https://cloud.google.com/datastore/docs/quickstart#create_a_database) in the GCP project you created earlier.
+Create a new [Datastore database](https://cloud.google.com/datastore/docs/quickstart#create_a_database) in the GCP project you created earlier. If creating
+from the console, then select 'Datastore mode'.
+
+```bash
+gcloud app create
+gcloud alpha datastore databases create --region <REGION>
+```
 
 Build Datastore indexes.
 
@@ -49,6 +57,7 @@ gcloud datastore indexes create index.yaml
 Create Pub/Sub topic and subscription.
 
 ```
+gcloud services enable pubsub.googleapis.com
 gcloud pubsub topics create geoawareness-ingest
 gcloud pubsub subscriptions create geoawareness-geofencing-service --topic geoawareness-ingest
 ```
@@ -64,38 +73,29 @@ npm test
 
 Seed Firestore (DataStore mode) database.
 
-```
+```bash
+# Seed Firestore (DataStore mode) database.
 node demo/seed_repository.js
-```
 
-Launch the Pub/Sub listener.
+# Launch the Pub/Sub listener in the background.
+node listener.js &
 
-```
-node listener.js
-```
-
-Send mock telemetry events for the Dalton Drive route.
-
-```
+# Send mock telemetry events for the Dalton Drive route.
 node demo/drive-route.js
 ```
 
-## Run Demo (existing infra)
+You will see JSON payload telemetry for three test users, who eventually reach their
+destinations and the program ends.
 
-If you want to use existing infrastructure and only need to run the demo follow these steps to ingest messages.
-
-1. Download a new json key for the `geoawareness@geoawareness-sandbox.iam.gserviceaccount.com` service account in the `geoawareness-sandbox` project, or, the relevant account in the relevant project you wish to ingest to.
-
-1. Save the newly download json file to `~/.keys/geowareness-runner.json` for example.
-
-1. Run the demo
-
-   export GOOGLE_APPLICATION_CREDENTIALS=~/.keys/geoawareness-runner.json && node demo/drive-route.js
+For existing infrastructure, you only need to run `node demo/drive-route.js`.
 
 ## Deploy to GCP
 
-```
+```bash
+# This only needs to be run the first time
 gcloud services enable containerregistry.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
+
 gcloud builds submit --tag gcr.io/$PROJECT_ID/geoawareness-geofencing-service
 
 gcloud compute instances create-with-container geoawareness-geofencing-service  \
@@ -113,6 +113,9 @@ The listener is ready to handle messages from the ingest topic as a pull subscri
 ```
 gcloud pubsub topics publish geoawareness-ingest --message="$(jq '.[0]' < ./test/fakes/events.json)"
 ```
+
+Check the logs of VM Instance `geoawareness-geofencing-service` for evidence that a
+message was received for processing.
 
 ### Updating deployed container
 
