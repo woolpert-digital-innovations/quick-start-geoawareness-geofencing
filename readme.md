@@ -17,24 +17,25 @@ export INGEST_SUBSCRIPTION_NAME=geoawareness-geofencing-service # optional
 
 Create service account. Example - _geoawareness@geoawareness-sandbox.iam.gserviceaccount.com_.
 
+The service account must have the following minimum permissions:
+
+- Firestore Datastore User
+- Pub/Sub Subscriber
+- Pub/Sub Publisher (demo script only)
+
+
 ```
 gcloud iam service-accounts create geoawareness
 gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:geoawareness@$PROJECT_ID.iam.gserviceaccount.com --role=roles/editor
 ```
 
-Create key for service account and download credentials json file.
+Create key for service account and download credentials json file. This step is required if running the tests or demo locally.
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=geoawareness-service-account-credentials.json
 gcloud iam service-accounts keys create $GOOGLE_APPLICATION_CREDENTIALS \
    --iam-account geoawareness@$PROJECT_ID.iam.gserviceaccount.com
 ```
-
-The service account must have the following minimum permissions:
-
-- Firestore Datastore User
-- Pub/Sub Subscriber
-- Pub/Sub Publisher (demo script only)
 
 ### Datastore
 
@@ -43,7 +44,7 @@ from the console, then select 'Datastore mode'.
 
 ```bash
 gcloud app create
-gcloud alpha datastore databases create --region <REGION>
+gcloud alpha datastore databases create --region $GCP_REGION
 ```
 
 Build Datastore indexes.
