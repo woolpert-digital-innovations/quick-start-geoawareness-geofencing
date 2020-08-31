@@ -96,7 +96,7 @@ test('geofenceEvent point in MIDDLE geofence NEW order', async t => {
     geofences = await repository.getGeofencesByStore(storeName);
     const geofenceIds = geofences.map(geofence => geofence.id);
     repository.deleteGeofences(geofenceIds, storeName);
-    await repository.deleteStore(storeName); // TODO: why does this need awaiting for store to be cleaned up?
+    await repository.deleteStore(storeName);
 });
 
 test('geofenceEvent point in MIDDLE geofence EXISTING order', async t => {
@@ -189,5 +189,5 @@ test('geofenceEvent point oustide ALL geofences NEW order', async t => {
     geofences = await repository.getGeofencesByStore(storeName);
     const geofenceIds = geofences.map(geofence => geofence.id);
     repository.deleteGeofences(geofenceIds, storeName);
-    await repository.deleteStore(storeName); // TODO: why does this need awaiting for store to be cleaned up?
+    await repository.deleteStore(storeName);
 });
