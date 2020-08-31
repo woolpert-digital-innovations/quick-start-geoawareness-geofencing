@@ -7,7 +7,6 @@ const booleanPointInPolygon = require('@turf/boolean-point-in-polygon').default;
  */
 const geofenceEvent = async evt => {
     try {
-        // TODO: wrap in a transaction
         const geofencingPromise = new Promise((resolve, reject) => {
             resolve(doGeofencing(evt));
         });
@@ -41,6 +40,7 @@ const geofenceEvent = async evt => {
         }
         order.latestEvent = latestEvent;
 
+        // Best practice to wrap the following writes in a transaction.
         await repository.saveOrder(order);
         repository.insertEvent(evt);
 
